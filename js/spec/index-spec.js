@@ -362,9 +362,12 @@ describe('Node Sentinel File Watcher', function() {
           return paths.reduce((chain, dir) => {
             directory = path.join(directory, dir);
             const nextDirectory = directory;
-            return chain.then(() => {
-              console.log('mkdir', nextDirectory);
-              fse.mkdir(nextDirectory)
+            return chain.then((err) => {
+              if (err) {
+                console.log('err', err);
+              }
+              // console.log('mkdir', nextDirectory);
+              return fse.mkdir(nextDirectory);
             });
           }, Promise.resolve());
         })
