@@ -43,284 +43,284 @@ describe('Node Sentinel File Watcher', function() {
       .then(done);
   });
 
-  describe('Basic', function() {
-    it('can watch a single file', function(done) {
-      const file = 'testing1.file';
-      const inPath = path.resolve(workDir, 'test1');
-      const filePath = path.join(inPath, file);
-      let changeEvents = 0;
-      let createEvents = 0;
-      let deleteEvents = 0;
+  // describe('Basic', function() {
+  //   it('can watch a single file', function(done) {
+  //     const file = 'testing1.file';
+  //     const inPath = path.resolve(workDir, 'test1');
+  //     const filePath = path.join(inPath, file);
+  //     let changeEvents = 0;
+  //     let createEvents = 0;
+  //     let deleteEvents = 0;
 
-      function findEvents(element) {
-        if (
-          element.action === nsfw.actions.MODIFIED &&
-          element.directory === path.resolve(inPath) &&
-          element.file === file
-        ) {
-          changeEvents++;
-        } else if (
-          element.action === nsfw.actions.CREATED &&
-          element.directory === path.resolve(inPath) &&
-          element.file === file
-        ) {
-          createEvents++;
-        } else if (
-          element.action === nsfw.actions.DELETED &&
-          element.directory === path.resolve(inPath) &&
-          element.file === file
-        ) {
-          deleteEvents++;
-        }
-      }
+  //     function findEvents(element) {
+  //       if (
+  //         element.action === nsfw.actions.MODIFIED &&
+  //         element.directory === path.resolve(inPath) &&
+  //         element.file === file
+  //       ) {
+  //         changeEvents++;
+  //       } else if (
+  //         element.action === nsfw.actions.CREATED &&
+  //         element.directory === path.resolve(inPath) &&
+  //         element.file === file
+  //       ) {
+  //         createEvents++;
+  //       } else if (
+  //         element.action === nsfw.actions.DELETED &&
+  //         element.directory === path.resolve(inPath) &&
+  //         element.file === file
+  //       ) {
+  //         deleteEvents++;
+  //       }
+  //     }
 
-      let watch;
+  //     let watch;
 
-      return nsfw(
-        filePath,
-        events => events.forEach(findEvents),
-        { debounceMS: 100 }
-      )
-        .then(_w => {
-          watch = _w;
-          return watch.start();
-        })
-        .then(() => new Promise(resolve => {
-          setTimeout(resolve, TIMEOUT_PER_STEP);
-        }))
-        .then(() => {
-          const fd = fse.openSync(filePath, 'w');
-          fse.writeSync(fd, 'Bean bag video games at noon.');
-          return fse.close(fd);
-        })
-        .then(() => new Promise(resolve => {
-          setTimeout(resolve, TIMEOUT_PER_STEP);
-        }))
-        .then(() => fse.remove(filePath))
-        .then(() => new Promise(resolve => {
-          setTimeout(resolve, TIMEOUT_PER_STEP);
-        }))
-        .then(() => {
-          const fd = fse.openSync(filePath, 'w');
-          fse.writeSync(fd, 'His watch has ended.');
-          return fse.close(fd);
-        })
-        .then(() => new Promise(resolve => {
-          setTimeout(resolve, TIMEOUT_PER_STEP);
-        }))
-        .then(() => watch.stop())
-        .then(() => {
-          expect(changeEvents).toBeGreaterThan(0);
-          expect(createEvents).toBe(1);
-          expect(deleteEvents).toBe(1);
-        })
-        .then(done, () =>
-          watch.stop().then((err) => done.fail(err)));
-    });
+  //     return nsfw(
+  //       filePath,
+  //       events => events.forEach(findEvents),
+  //       { debounceMS: 100 }
+  //     )
+  //       .then(_w => {
+  //         watch = _w;
+  //         return watch.start();
+  //       })
+  //       .then(() => new Promise(resolve => {
+  //         setTimeout(resolve, TIMEOUT_PER_STEP);
+  //       }))
+  //       .then(() => {
+  //         const fd = fse.openSync(filePath, 'w');
+  //         fse.writeSync(fd, 'Bean bag video games at noon.');
+  //         return fse.close(fd);
+  //       })
+  //       .then(() => new Promise(resolve => {
+  //         setTimeout(resolve, TIMEOUT_PER_STEP);
+  //       }))
+  //       .then(() => fse.remove(filePath))
+  //       .then(() => new Promise(resolve => {
+  //         setTimeout(resolve, TIMEOUT_PER_STEP);
+  //       }))
+  //       .then(() => {
+  //         const fd = fse.openSync(filePath, 'w');
+  //         fse.writeSync(fd, 'His watch has ended.');
+  //         return fse.close(fd);
+  //       })
+  //       .then(() => new Promise(resolve => {
+  //         setTimeout(resolve, TIMEOUT_PER_STEP);
+  //       }))
+  //       .then(() => watch.stop())
+  //       .then(() => {
+  //         expect(changeEvents).toBeGreaterThan(0);
+  //         expect(createEvents).toBe(1);
+  //         expect(deleteEvents).toBe(1);
+  //       })
+  //       .then(done, () =>
+  //         watch.stop().then((err) => done.fail(err)));
+  //   });
 
-    it('can listen for a create event', function(done) {
-      const file = 'another_test.file';
-      const inPath = path.resolve(workDir, 'test2', 'folder2');
-      let eventFound = false;
+  //   it('can listen for a create event', function(done) {
+  //     const file = 'another_test.file';
+  //     const inPath = path.resolve(workDir, 'test2', 'folder2');
+  //     let eventFound = false;
 
-      function findEvent(element) {
-        if (
-          element.action === nsfw.actions.CREATED &&
-          element.directory === path.resolve(inPath) &&
-          element.file === file
-        ) {
-          eventFound = true;
-        }
-      }
+  //     function findEvent(element) {
+  //       if (
+  //         element.action === nsfw.actions.CREATED &&
+  //         element.directory === path.resolve(inPath) &&
+  //         element.file === file
+  //       ) {
+  //         eventFound = true;
+  //       }
+  //     }
 
-      let watch;
+  //     let watch;
 
-      return nsfw(
-        workDir,
-        events => events.forEach(findEvent),
-        { debounceMS: DEBOUNCE }
-      )
-        .then(_w => {
-          watch = _w;
-          return watch.start();
-        })
-        .then(() => new Promise(resolve => {
-          setTimeout(resolve, TIMEOUT_PER_STEP);
-        }))
-        .then(() => fse.open(path.join(inPath, file), 'w'))
-        .then(fd => {
-          return fse.write(fd, 'Peanuts, on occasion, rain from the skies.').then(() => fd);
-        })
-        .then(fd => fse.close(fd))
-        .then(() => new Promise(resolve => {
-          setTimeout(resolve, TIMEOUT_PER_STEP);
-        }))
-        .then(() => {
-          expect(eventFound).toBe(true);
-          return watch.stop();
-        })
-        .then(done, () =>
-          watch.stop().then((err) => done.fail(err)));
-    });
+  //     return nsfw(
+  //       workDir,
+  //       events => events.forEach(findEvent),
+  //       { debounceMS: DEBOUNCE }
+  //     )
+  //       .then(_w => {
+  //         watch = _w;
+  //         return watch.start();
+  //       })
+  //       .then(() => new Promise(resolve => {
+  //         setTimeout(resolve, TIMEOUT_PER_STEP);
+  //       }))
+  //       .then(() => fse.open(path.join(inPath, file), 'w'))
+  //       .then(fd => {
+  //         return fse.write(fd, 'Peanuts, on occasion, rain from the skies.').then(() => fd);
+  //       })
+  //       .then(fd => fse.close(fd))
+  //       .then(() => new Promise(resolve => {
+  //         setTimeout(resolve, TIMEOUT_PER_STEP);
+  //       }))
+  //       .then(() => {
+  //         expect(eventFound).toBe(true);
+  //         return watch.stop();
+  //       })
+  //       .then(done, () =>
+  //         watch.stop().then((err) => done.fail(err)));
+  //   });
 
-    it('can listen for a delete event', function(done) {
-      const file = 'testing3.file';
-      const inPath = path.resolve(workDir, 'test3');
-      let eventFound = false;
+  //   it('can listen for a delete event', function(done) {
+  //     const file = 'testing3.file';
+  //     const inPath = path.resolve(workDir, 'test3');
+  //     let eventFound = false;
 
-      function findEvent(element) {
-        if (
-          element.action === nsfw.actions.DELETED &&
-          element.directory === path.resolve(inPath) &&
-          element.file === file
-        ) {
-          eventFound = true;
-        }
-      }
+  //     function findEvent(element) {
+  //       if (
+  //         element.action === nsfw.actions.DELETED &&
+  //         element.directory === path.resolve(inPath) &&
+  //         element.file === file
+  //       ) {
+  //         eventFound = true;
+  //       }
+  //     }
 
-      let watch;
+  //     let watch;
 
-      return nsfw(
-        workDir,
-        events => events.forEach(findEvent),
-        { debounceMS: DEBOUNCE }
-      )
-        .then(_w => {
-          watch = _w;
-          return watch.start();
-        })
-        .then(() => new Promise(resolve => {
-          setTimeout(resolve, TIMEOUT_PER_STEP);
-        }))
-        .then(() => fse.remove(path.join(inPath, file)))
-        .then(() => new Promise(resolve => {
-          setTimeout(resolve, TIMEOUT_PER_STEP);
-        }))
-        .then(() => {
-          expect(eventFound).toBe(true);
-          return watch.stop();
-        })
-        .then(done, () =>
-          watch.stop().then((err) => done.fail(err)));
-    });
+  //     return nsfw(
+  //       workDir,
+  //       events => events.forEach(findEvent),
+  //       { debounceMS: DEBOUNCE }
+  //     )
+  //       .then(_w => {
+  //         watch = _w;
+  //         return watch.start();
+  //       })
+  //       .then(() => new Promise(resolve => {
+  //         setTimeout(resolve, TIMEOUT_PER_STEP);
+  //       }))
+  //       .then(() => fse.remove(path.join(inPath, file)))
+  //       .then(() => new Promise(resolve => {
+  //         setTimeout(resolve, TIMEOUT_PER_STEP);
+  //       }))
+  //       .then(() => {
+  //         expect(eventFound).toBe(true);
+  //         return watch.stop();
+  //       })
+  //       .then(done, () =>
+  //         watch.stop().then((err) => done.fail(err)));
+  //   });
 
-    it('can listen for a modify event', function(done) {
-      const file = 'testing0.file';
-      const inPath = path.resolve(workDir, 'test0');
-      let eventFound = false;
+  //   it('can listen for a modify event', function(done) {
+  //     const file = 'testing0.file';
+  //     const inPath = path.resolve(workDir, 'test0');
+  //     let eventFound = false;
 
-      function findEvent(element) {
-        if (
-          element.action === nsfw.actions.MODIFIED &&
-          element.directory === path.resolve(inPath) &&
-          element.file === file
-        ) {
-          eventFound = true;
-        }
-      }
+  //     function findEvent(element) {
+  //       if (
+  //         element.action === nsfw.actions.MODIFIED &&
+  //         element.directory === path.resolve(inPath) &&
+  //         element.file === file
+  //       ) {
+  //         eventFound = true;
+  //       }
+  //     }
 
-      let watch;
+  //     let watch;
 
-      return nsfw(
-        workDir,
-        events => events.forEach(findEvent),
-        { debounceMS: DEBOUNCE }
-      )
-        .then(_w => {
-          watch = _w;
-          return watch.start();
-        })
-        .then(() => new Promise(resolve => {
-          setTimeout(resolve, TIMEOUT_PER_STEP);
-        }))
-        .then(() => fse.open(path.join(inPath, file), 'w'))
-        .then(fd => {
-          return fse.write(fd, 'At times, sunflower seeds are all that is life.').then(() => fd);
-        })
-        .then(fd => fse.close(fd))
-        .then(() => new Promise(resolve => {
-          setTimeout(resolve, TIMEOUT_PER_STEP);
-        }))
-        .then(() => {
-          expect(eventFound).toBe(true);
-          return watch.stop();
-        })
-        .then(done, () =>
-          watch.stop().then((err) => done.fail(err)));
-    });
+  //     return nsfw(
+  //       workDir,
+  //       events => events.forEach(findEvent),
+  //       { debounceMS: DEBOUNCE }
+  //     )
+  //       .then(_w => {
+  //         watch = _w;
+  //         return watch.start();
+  //       })
+  //       .then(() => new Promise(resolve => {
+  //         setTimeout(resolve, TIMEOUT_PER_STEP);
+  //       }))
+  //       .then(() => fse.open(path.join(inPath, file), 'w'))
+  //       .then(fd => {
+  //         return fse.write(fd, 'At times, sunflower seeds are all that is life.').then(() => fd);
+  //       })
+  //       .then(fd => fse.close(fd))
+  //       .then(() => new Promise(resolve => {
+  //         setTimeout(resolve, TIMEOUT_PER_STEP);
+  //       }))
+  //       .then(() => {
+  //         expect(eventFound).toBe(true);
+  //         return watch.stop();
+  //       })
+  //       .then(done, () =>
+  //         watch.stop().then((err) => done.fail(err)));
+  //   });
 
-    it('can run multiple watchers at once', function(done) {
-      const dirA = path.resolve(workDir, 'test0');
-      const fileA = 'testing1.file';
-      const dirB = path.resolve(workDir, 'test1');
-      const fileB = 'testing0.file';
-      let events = 0;
+  //   it('can run multiple watchers at once', function(done) {
+  //     const dirA = path.resolve(workDir, 'test0');
+  //     const fileA = 'testing1.file';
+  //     const dirB = path.resolve(workDir, 'test1');
+  //     const fileB = 'testing0.file';
+  //     let events = 0;
 
-      function findEvent(element) {
-        if (
-          element.action === nsfw.actions.CREATED
-        ) {
-          if (element.directory === dirA && element.file === fileA) {
-            events++;
-          } else if (element.directory === dirB && element.file === fileB) {
-            events++;
-          }
-        }
-      }
+  //     function findEvent(element) {
+  //       if (
+  //         element.action === nsfw.actions.CREATED
+  //       ) {
+  //         if (element.directory === dirA && element.file === fileA) {
+  //           events++;
+  //         } else if (element.directory === dirB && element.file === fileB) {
+  //           events++;
+  //         }
+  //       }
+  //     }
 
-      let watchA;
-      let watchB;
+  //     let watchA;
+  //     let watchB;
 
-      return nsfw(
-        dirA,
-        events => events.forEach(findEvent),
-        { debounceMS: DEBOUNCE }
-      )
-        .then(_w => {
-          watchA = _w;
-          return watchA.start();
-        })
-        .then(() => nsfw(
-          dirB,
-          events => events.forEach(findEvent),
-          { debounceMS: DEBOUNCE })
-        .then(_w => {
-          watchB = _w;
-          return watchB.start();
-        }))
-        .then(() => new Promise(resolve => {
-          setTimeout(resolve, TIMEOUT_PER_STEP);
-        }))
-        .then(() => fse.open(path.join(dirA, fileA), 'w'))
-        .then(fd => new Promise(resolve => {
-          setTimeout(() => resolve(fd), TIMEOUT_PER_STEP);
-        }))
-        .then(fd => {
-          return fse.write(fd, 'At times, sunflower seeds are all that is life.').then(() => fd);
-        })
-        .then(fd => fse.close(fd))
-        .then(() => fse.open(path.join(dirB, fileB), 'w'))
-        .then(fd => new Promise(resolve => {
-          setTimeout(() => resolve(fd), TIMEOUT_PER_STEP);
-        }))
-        .then(fd => {
-          return fse.write(fd, 'At times, sunflower seeds are all that is life.').then(() => fd);
-        })
-        .then(fd => fse.close(fd))
-        .then(() => new Promise(resolve => {
-          setTimeout(resolve, TIMEOUT_PER_STEP);
-        }))
-        .then(() => {
-          expect(events).toBe(2);
-          return watchA.stop();
-        })
-        .then(() => watchB.stop())
-        .then(done, () =>
-          watchA.stop()
-            .then(() => watchB.stop())
-            .then((err) => done.fail(err)));
-    });
-  });
+  //     return nsfw(
+  //       dirA,
+  //       events => events.forEach(findEvent),
+  //       { debounceMS: DEBOUNCE }
+  //     )
+  //       .then(_w => {
+  //         watchA = _w;
+  //         return watchA.start();
+  //       })
+  //       .then(() => nsfw(
+  //         dirB,
+  //         events => events.forEach(findEvent),
+  //         { debounceMS: DEBOUNCE })
+  //       .then(_w => {
+  //         watchB = _w;
+  //         return watchB.start();
+  //       }))
+  //       .then(() => new Promise(resolve => {
+  //         setTimeout(resolve, TIMEOUT_PER_STEP);
+  //       }))
+  //       .then(() => fse.open(path.join(dirA, fileA), 'w'))
+  //       .then(fd => new Promise(resolve => {
+  //         setTimeout(() => resolve(fd), TIMEOUT_PER_STEP);
+  //       }))
+  //       .then(fd => {
+  //         return fse.write(fd, 'At times, sunflower seeds are all that is life.').then(() => fd);
+  //       })
+  //       .then(fd => fse.close(fd))
+  //       .then(() => fse.open(path.join(dirB, fileB), 'w'))
+  //       .then(fd => new Promise(resolve => {
+  //         setTimeout(() => resolve(fd), TIMEOUT_PER_STEP);
+  //       }))
+  //       .then(fd => {
+  //         return fse.write(fd, 'At times, sunflower seeds are all that is life.').then(() => fd);
+  //       })
+  //       .then(fd => fse.close(fd))
+  //       .then(() => new Promise(resolve => {
+  //         setTimeout(resolve, TIMEOUT_PER_STEP);
+  //       }))
+  //       .then(() => {
+  //         expect(events).toBe(2);
+  //         return watchA.stop();
+  //       })
+  //       .then(() => watchB.stop())
+  //       .then(done, () =>
+  //         watchA.stop()
+  //           .then(() => watchB.stop())
+  //           .then((err) => done.fail(err)));
+  //   });
+  // });
 
   describe('Recursive', function() {
     it('can listen for the creation of a deeply nested file', function(done) {
@@ -329,6 +329,9 @@ describe('Node Sentinel File Watcher', function() {
       let foundFileCreateEvent = false;
 
       function findEvent(element) {
+        console.log('event: ' + element.action + ', ' + element.directory + ', ' + element.file);
+        // console.log('a', element.directory);
+        // console.log('b', path.join(workDir, ...paths));
         if (
           element.action === nsfw.actions.CREATED &&
           element.directory === path.join(workDir, ...paths) &&
@@ -338,6 +341,7 @@ describe('Node Sentinel File Watcher', function() {
         }
       }
 
+      let fd;
       let watch;
 
       let directory = workDir;
@@ -358,20 +362,31 @@ describe('Node Sentinel File Watcher', function() {
           return paths.reduce((chain, dir) => {
             directory = path.join(directory, dir);
             const nextDirectory = directory;
-            return chain.then(() => fse.mkdir(nextDirectory));
+            return chain.then(() => {
+              console.log('mkdir', nextDirectory);
+              fse.mkdir(nextDirectory)
+            });
           }, Promise.resolve());
         })
-        .then(() => fse.open(path.join(directory, file), 'w'))
-        .then(fd => fse.close(fd))
+        .then(() => {
+          return fse.open(path.join(directory, file), 'w');
+        }).then(_fd => {
+          fd = _fd;
+        })
         .then(() => new Promise(resolve => {
           setTimeout(resolve, TIMEOUT_PER_STEP);
         }))
         .then(() => {
           expect(foundFileCreateEvent).toBe(true);
-          return watch.stop();
+          return fse.close(fd).then(() => {
+            watch.stop();
+          });
         })
-        .then(done, () =>
-          watch.stop().then((err) => done.fail(err)));
+        .then(done, () => {
+          return fse.close(fd).then(() => {
+            return watch.stop().then((err) => done.fail(err));
+          });
+        });
     });
 
     it('can listen for the destruction of a directory and its subtree', function(done) {
