@@ -341,10 +341,22 @@ describe('Node Sentinel File Watcher', function() {
         }
       }
 
+      function mkdirp(_path) {
+        function _mkdir() {
+          return fse.mkdir(_path);
+        }
+        return _mkdir().then(null, (err) => {
+          if (err.code === 'ENOENT') {
+            return mkdirp(path.dirname(_path)).then(_mkdir);
+          }
+          return err;
+        });
+      }
+
       let fd;
       let watch;
 
-      let directory = workDir;
+      const directory = workDir;
 
       return nsfw(
         workDir,
@@ -359,17 +371,18 @@ describe('Node Sentinel File Watcher', function() {
           setTimeout(resolve, TIMEOUT_PER_STEP);
         }))
         .then(() => {
-          return paths.reduce((chain, dir) => {
-            directory = path.join(directory, dir);
-            const nextDirectory = directory;
-            return chain.then((err) => {
-              if (err) {
-                console.log('err', err);
-              }
-              // console.log('mkdir', nextDirectory);
-              return fse.mkdir(nextDirectory);
-            });
-          }, Promise.resolve());
+          return mkdirp(path.join(workDir, ...paths));
+          // return paths.reduce((chain, dir) => {
+          //   directory = path.join(directory, dir);
+          //   const nextDirectory = directory;
+          //   return chain.then((err) => {
+          //     if (err) {
+          //       console.log('err', err);
+          //     }
+          //     // console.log('mkdir', nextDirectory);
+          //     return fse.mkdir(nextDirectory);
+          //   });
+          // }, Promise.resolve());
         })
         .then(() => {
           return fse.open(path.join(directory, file), 'w');
